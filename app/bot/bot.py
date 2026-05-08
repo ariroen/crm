@@ -45,16 +45,16 @@ def create_dispatcher() -> Dispatcher:
     dp.message.middleware(DbSessionMiddleware())
     dp.callback_query.middleware(DbSessionMiddleware())
 
-    # Регистрация роутеров (порядок важен!)
+    # Регистрация роутеров (порядок важен! Сначала callback'и кандидатов)
     dp.include_routers(
         start_router,
+        candidate_cb_router,  # ВАЖНО: Должен быть перед candidate_router для обработки callback'ов
         candidate_router,
         voice_router,
         photo_router,
         reminders_router,
         ads_router,
         operators_router,
-        candidate_cb_router,
     )
 
     logger.info("🤖 Dispatcher создан, роутеры зарегистрированы")

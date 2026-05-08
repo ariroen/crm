@@ -86,10 +86,10 @@ async def cb_archive(callback: CallbackQuery, session: AsyncSession):
     svc = CandidateService(session)
     c = await svc.archive(cid)
     if c:
-        await callback.answer("🗄 В архив!")
         await callback.message.edit_text(
             f"🗄 **{c.full_name}** отправлен в архив.", reply_markup=main_menu_kb(), parse_mode="Markdown",
         )
+        await callback.answer("🗄 В архив!")
     else:
         await callback.answer("⚠️ Не найден", show_alert=True)
 
