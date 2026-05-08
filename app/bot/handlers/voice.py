@@ -44,7 +44,7 @@ async def handle_voice(message: Message, session: AsyncSession, bot: Bot):
         logger.info("🎤 Транскрибация результат: '%s' (len=%d)", text[:100] if text else "EMPTY", len(text or ""))
 
         if not text or not text.strip():
-            await wait_msg.edit_text("⚠️ Не удалось распознать речь. Попробуйте говорить громче и чётче.")
+            await wait_msg.edit_text("⚠️ Не удалось распознать речь. Попробуйте говорить громче и чётче.\n\nРаспознанный текст: '{}'".format(text or "(пусто)"))
             return
 
         await wait_msg.edit_text("🎤 Распознано: {}\n\n🧠 Анализирую...".format(text))

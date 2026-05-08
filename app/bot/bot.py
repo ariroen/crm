@@ -18,6 +18,7 @@ from app.bot.handlers.photo import router as photo_router
 from app.bot.handlers.reminders import router as reminders_router
 from app.bot.handlers.ads import router as ads_router
 from app.bot.handlers.operators import router as operators_router
+from app.bot.handlers.backup import router as backup_router
 from app.bot.callbacks.candidate_cb import router as candidate_cb_router
 
 logger = logging.getLogger(__name__)
@@ -48,6 +49,7 @@ def create_dispatcher() -> Dispatcher:
     # Регистрация роутеров (порядок важен! Сначала callback'и кандидатов)
     dp.include_routers(
         start_router,
+        backup_router,
         candidate_cb_router,  # ВАЖНО: Должен быть перед candidate_router для обработки callback'ов
         candidate_router,
         voice_router,

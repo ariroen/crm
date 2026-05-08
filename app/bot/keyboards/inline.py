@@ -32,6 +32,7 @@ def main_menu_kb() -> InlineKeyboardMarkup:
     )
     builder.row(
         InlineKeyboardButton(text="🗄 Архив", callback_data="archive_list"),
+        InlineKeyboardButton(text="💾 Бэкап", callback_data="backup_menu"),
     )
     return builder.as_markup()
 

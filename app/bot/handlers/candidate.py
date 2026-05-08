@@ -109,23 +109,35 @@ async def cmd_list(message: Message, session: AsyncSession):
 async def cb_list(callback: CallbackQuery, session: AsyncSession):
     svc = CandidateService(session)
     candidates = await svc.list_active()
-    if not candidates:
-        await callback.message.edit_text("📋 Список пуст.", reply_markup=main_menu_kb())
-    else:
-        await callback.message.edit_text(
-            f"📋 **Кандидаты ({len(candidates)}):**",
-            reply_markup=candidates_list_kb(candidates), parse_mode="Markdown",
-        )
+    try:
+        if not candidates:
+            await callback.message.edit_text("📋 Список пуст.", reply_markup=main_menu_kb())
+        else:
+            await callback.message.edit_text(
+                f"📋 **Кандидаты ({len(candidates)}):**",
+                reply_markup=candidates_list_kb(candidates), parse_mode="Markdown",
+            )
+    except Exception as e:
+        if "message is not modified" in str(e):
+            pass
+        else:
+            raise
     await callback.answer()
 
 
 @router.callback_query(F.data == "add_candidate")
 async def cb_add(callback: CallbackQuery, state: FSMContext):
     await state.set_state(CandidateFSM.waiting_fast_entry)
-    await callback.message.edit_text(
-        "✏️ **Быстрое добавление**\nВведите: `ФИО Телефон Источник`\nИли 🎤 голосовое",
-        parse_mode="Markdown",
-    )
+    try:
+        await callback.message.edit_text(
+            "✏️ **Быстрое добавление**\nВведите: `ФИО Телефон Источник`\nИли 🎤 голосовое",
+            parse_mode="Markdown",
+        )
+    except Exception as e:
+        if "message is not modified" in str(e):
+            pass
+        else:
+            raise
     await callback.answer()
 
 
@@ -137,16 +149,28 @@ async def cb_view(callback: CallbackQuery, session: AsyncSession):
     if not c:
         await callback.answer("⚠️ Не найден", show_alert=True)
         return
-    await callback.message.edit_text(
-        format_card(c), reply_markup=candidate_card_kb(c), parse_mode="Markdown",
-    )
+    try:
+        await callback.message.edit_text(
+            format_card(c), reply_markup=candidate_card_kb(c), parse_mode="Markdown",
+        )
+    except Exception as e:
+        if "message is not modified" in str(e):
+            pass
+        else:
+            raise
     await callback.answer()
 
 
 @router.callback_query(F.data == "search_candidate")
 async def cb_search_start(callback: CallbackQuery, state: FSMContext):
     await state.set_data({"search_mode": True})
-    await callback.message.edit_text("🔍 Введите имя или телефон:", parse_mode="Markdown")
+    try:
+        await callback.message.edit_text("🔍 Введите имя или телефон:", parse_mode="Markdown")
+    except Exception as e:
+        if "message is not modified" in str(e):
+            pass
+        else:
+            raise
     await callback.answer()
 
 
@@ -170,5 +194,11 @@ async def cb_stats(callback: CallbackQuery, session: AsyncSession):
         f"🪖 Убыло: {tr_dep}\n"
         f"📈 Конверсия: {conv}%"
     )
-    await callback.message.edit_text(text, reply_markup=main_menu_kb(), parse_mode="Markdown")
+    try:
+        await callback.message.edit_text(text, reply_markup=main_menu_kb(), parse_mode="Markdown")
+    except Exception as e:
+        if "message is not modified" in str(e):
+            pass
+        else:
+            raise
     await callback.answer()
