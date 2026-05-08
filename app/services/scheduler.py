@@ -8,14 +8,14 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Candidate, Task, TaskStatus, AdPost
-from app.db.session import async_session_maker
+from app.db.session import async_session
 
 logger = logging.getLogger(__name__)
 
 
 async def daily_report(bot, chat_id: int):
     """Дневной рапорт в 21:00 — сводка за сутки."""
-    async with async_session_maker() as session:
+    async with async_session() as session:
         yesterday = datetime.now() - timedelta(hours=24)
 
         # Кандидаты
@@ -89,7 +89,7 @@ async def daily_report(bot, chat_id: int):
 
 async def check_stale_candidates(bot, chat_id: int, hours=48):
     """Уведомление о зависших — если кандидат не обновлялся >48ч."""
-    async with async_session_maker() as session:
+    async with async_session() as session:
         threshold = datetime.now() - timedelta(hours=hours)
         result = await session.execute(
             select(Candidate).where(
@@ -131,7 +131,7 @@ async def check_stale_candidates(bot, chat_id: int, hours=48):
 
 async def check_task_deadlines(bot, chat_id: int):
     """Уведомление о задачах с истекающим дедлайном (в ближайший час)."""
-    async with async_session_maker() as session:
+    async with async_session() as session:
         now = datetime.now()
         soon = now + timedelta(hours=1)
         result = await session.execute(
