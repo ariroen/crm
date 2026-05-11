@@ -35,11 +35,12 @@ def format_card(c) -> str:
     if hasattr(c, 'operator') and c.operator:
         lines.append("👤 Оператор: <b>{}</b>".format(hd.quote(c.operator.name)))
     lines.append("")
+    lines.append("  {}  ГИЦ".format(c.gic_emoji))
     lines.append("  {}  Билет".format(c.ticket_emoji))
     if c.arrival_date:
         lines.append("  📅 Прибытие: <b>{}</b>".format(c.arrival_date.strftime('%d.%m.%Y')))
     lines.append("  {}  Медицина".format(c.medical_emoji))
-    lines.append("  {}  Обучение".format(c.training_emoji))
+    lines.append("  {}  Оформление".format(c.registration_emoji))
     if c.notes:
         # Показываем последние 200 символов заметок, экранируя их
         safe_notes = hd.quote(c.notes[-200:])

@@ -79,34 +79,28 @@ def candidate_card_kb(candidate: Candidate) -> InlineKeyboardMarkup:
         ),
     )
     builder.row(
-        InlineKeyboardButton(
-            text=TRAINING_LABELS.get(candidate.training_status, "🪖 Обучение"),
-            callback_data=f"cycle_training:{cid}",
-        ),
-    )
-
-    # Строка 2: Действия
+    # Строка 3: ГИЦ и Билет
     builder.row(
-        InlineKeyboardButton(text="📎 Прикрепить фото", callback_data=f"attach_photo:{cid}"),
-        InlineKeyboardButton(text="🖼 Посмотреть фото", callback_data=f"view_photos:{cid}"),
+        InlineKeyboardButton(text="🔎 ГИЦ: {}".format(candidate.gic_emoji), callback_data=f"toggle_gic:{cid}"),
+        InlineKeyboardButton(text="🎫 Билет: {}".format(candidate.ticket_emoji), callback_data=f"cycle_ticket:{cid}"),
     )
-
-    # Строка 3: Напоминания и прочее
+    # Строка 4: Медицина и Оформление
     builder.row(
-        InlineKeyboardButton(text="⏰ Напомнить", callback_data=f"set_reminder:{cid}"),
-        InlineKeyboardButton(text="✏️ Заметка", callback_data=f"edit_notes:{cid}"),
+        InlineKeyboardButton(text="🏥 Мед: {}".format(candidate.medical_emoji), callback_data=f"cycle_medical:{cid}"),
+        InlineKeyboardButton(text="📝 Оформл: {}".format(candidate.registration_emoji), callback_data=f"cycle_reg:{cid}"),
     )
-
-    # Строка 4: Оператор и категория
+    # Строка 5: Заметки, Фото, Категория
     builder.row(
-        InlineKeyboardButton(text="👤 Оператор", callback_data=f"assign_op:{cid}"),
+        InlineKeyboardButton(text="📝 Заметки", callback_data=f"edit_notes:{cid}"),
+        InlineKeyboardButton(text="📎 Фото", callback_data=f"add_photo_btn:{cid}"),
         InlineKeyboardButton(text="📁 Категория", callback_data=f"set_cat:{cid}"),
     )
 
-    # Строка 5: Архив, PDF и назад
+    # Строка 6: Архив, PDF и Удалить
     builder.row(
         InlineKeyboardButton(text="📄 Экспорт PDF", callback_data=f"export_pdf:{cid}"),
         InlineKeyboardButton(text="🗄 В архив", callback_data=f"archive:{cid}"),
+        InlineKeyboardButton(text="🗑 Удалить", callback_data=f"confirm_delete:{cid}"),
     )
     builder.row(
         InlineKeyboardButton(text="◀️ Назад", callback_data="list_candidates"),
@@ -195,5 +189,14 @@ def confirm_kb(action: str, target_id: int) -> InlineKeyboardMarkup:
     builder.row(
         InlineKeyboardButton(text="✅ Да", callback_data=f"confirm:{action}:{target_id}"),
         InlineKeyboardButton(text="❌ Нет", callback_data=f"cancel:{action}:{target_id}"),
+    )
+    return builder.as_markup()
+
+def delete_confirm_kb(candidate_id: int) -> InlineKeyboardMarkup:
+    """Клавиатура подтверждения удаления."""
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text="❌ ДА, УДАЛИТЬ", callback_data=f"delete_final:{candidate_id}"),
+        InlineKeyboardButton(text="🔙 ОТМЕНА", callback_data=f"view_candidate:{candidate_id}"),
     )
     return builder.as_markup()

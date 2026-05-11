@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.bot.handlers.candidate import format_card
-from app.bot.keyboards.inline import candidate_card_kb, main_menu_kb
+from app.bot.keyboards.inline import candidate_card_kb, main_menu_kb, delete_confirm_kb
 from app.bot.states.candidate_fsm import NotesFSM
 from app.services.candidate_service import CandidateService
 from app.services.pdf_service import pdf_service
@@ -71,15 +71,30 @@ async def cb_cycle_medical(callback: CallbackQuery, session: AsyncSession):
     )
 
 
-@router.callback_query(F.data.startswith("cycle_training:"))
-async def cb_cycle_training(callback: CallbackQuery, session: AsyncSession):
+@router.callback_query(F.data.startswith("toggle_gic:"))
+async def cb_toggle_gic(callback: CallbackQuery, session: AsyncSession):
     cid = int(callback.data.split(":")[1])
     svc = CandidateService(session)
-    c = await svc.cycle_training_status(cid)
+    c = await svc.toggle_gic_status(cid)
     if not c:
         await callback.answer("⚠️ Не найден", show_alert=True)
         return
-    await callback.answer(f"🪖 → {c.training_emoji}")
+    status = "В ГИЦ ✅" if c.gic_status else "НЕ В ГИЦ ❌"
+    await callback.answer(f"🔎 ГИЦ: {status}")
+    await callback.message.edit_text(
+        format_card(c), reply_markup=candidate_card_kb(c), parse_mode="HTML",
+    )
+
+
+@router.callback_query(F.data.startswith("cycle_reg:"))
+async def cb_cycle_reg(callback: CallbackQuery, session: AsyncSession):
+    cid = int(callback.data.split(":")[1])
+    svc = CandidateService(session)
+    c = await svc.cycle_registration_status(cid)
+    if not c:
+        await callback.answer("⚠️ Не найден", show_alert=True)
+        return
+    await callback.answer(f"📝 Оформление → {c.registration_emoji}")
     await callback.message.edit_text(
         format_card(c), reply_markup=candidate_card_kb(c), parse_mode="HTML",
     )
@@ -220,3 +235,25 @@ async def cb_archive_list(callback: CallbackQuery, session: AsyncSession):
             reply_markup=main_menu_kb(), parse_mode="HTML",
         )
     await callback.answer()
+
+@router.callback_query(F.data.startswith("confirm_delete:"))
+async def cb_confirm_delete(callback: CallbackQuery):
+    cid = int(callback.data.split(":")[1])
+    await callback.message.edit_text(
+        "⚠️ **ВЫ УВЕРЕНЫ?**\nУдаление кандидата нельзя отменить.",
+        reply_markup=delete_confirm_kb(cid),
+        parse_mode="Markdown"
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("delete_final:"))
+async def cb_delete_final(callback: CallbackQuery, session: AsyncSession):
+    cid = int(callback.data.split(":")[1])
+    svc = CandidateService(session)
+    success = await svc.delete(cid)
+    if success:
+        await callback.message.edit_text("🗑 Кандидат успешно удален.", reply_markup=main_menu_kb())
+        await callback.answer("🗑 Удалено")
+    else:
+        await callback.answer("⚠️ Ошибка при удалении", show_alert=True)

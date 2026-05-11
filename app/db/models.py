@@ -46,10 +46,13 @@ class MedicalStatus(str, enum.Enum):
     UNFIT = "unfit"
 
 
-class TrainingStatus(str, enum.Enum):
-    NONE = "none"
-    ASSIGNED = "assigned"
-    DEPARTED = "departed"
+class RegistrationStatus(str, enum.Enum):
+    """Стадии оформления кандидата."""
+    NONE = "none"               # Не начато
+    ARRIVED = "arrived"         # Пришёл на пункт
+    MEDICAL = "medical"         # Пошёл на медицину
+    ORDERED = "ordered"         # Поставлен в приказ
+    DEPARTED = "departed"       # Убыл
 
 
 class OperatorRole(str, enum.Enum):
@@ -74,7 +77,7 @@ class Operator(Base):
     user_id: Mapped[int] = mapped_column(Integer, unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[OperatorRole] = mapped_column(
-        Enum(OperatorRole), default=OperatorRole.OPERATOR, nullable=False
+        SQLEnum(OperatorRole), default=OperatorRole.OPERATOR, nullable=False
     )
     active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
@@ -111,17 +114,18 @@ class Candidate(Base):
     source: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     ticket_status: Mapped[TicketStatus] = mapped_column(
-        Enum(TicketStatus), default=TicketStatus.NEEDED, nullable=False
+        SQLEnum(TicketStatus), default=TicketStatus.NEEDED, nullable=False
     )
     arrival_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     medical_status: Mapped[MedicalStatus] = mapped_column(
-        Enum(MedicalStatus), default=MedicalStatus.NOT_STARTED, nullable=False
+        SQLEnum(MedicalStatus), default=MedicalStatus.NOT_STARTED, nullable=False
     )
 
-    training_status: Mapped[TrainingStatus] = mapped_column(
-        Enum(TrainingStatus), default=TrainingStatus.NONE, nullable=False
+    registration_status: Mapped[RegistrationStatus] = mapped_column(
+        SQLEnum(RegistrationStatus), default=RegistrationStatus.NONE
     )
+    gic_status: Mapped[bool] = mapped_column(default=False)  # Проверка в ГИЦ
 
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     tags: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
@@ -177,17 +181,23 @@ class Candidate(Base):
         }.get(self.medical_status, "🏥❓")
 
     @property
-    def training_emoji(self) -> str:
+    def registration_emoji(self) -> str:
         return {
-            TrainingStatus.NONE: "🪖❌",
-            TrainingStatus.ASSIGNED: "🪖📋",
-            TrainingStatus.DEPARTED: "🪖✅",
-        }.get(self.training_status, "🪖❓")
+            RegistrationStatus.NONE: "📝❌",
+            RegistrationStatus.ARRIVED: "📝🏠",
+            RegistrationStatus.MEDICAL: "📝🏥",
+            RegistrationStatus.ORDERED: "📝📜",
+            RegistrationStatus.DEPARTED: "📝🚀",
+        }.get(self.registration_status, "📝❓")
+
+    @property
+    def gic_emoji(self) -> str:
+        return "🔍✅" if self.gic_status else "🔍❌"
 
     @property
     def status_line(self) -> str:
-        return "{} | {} | {} | {}".format(
-            self.full_name, self.ticket_emoji, self.medical_emoji, self.training_emoji
+        return "{} | {} | {} | {} | {}".format(
+            self.full_name, self.gic_emoji, self.ticket_emoji, self.medical_emoji, self.registration_emoji
         )
 
     def __repr__(self) -> str:

@@ -16,7 +16,8 @@ from app.db.models import (
     CandidatePhoto,
     MedicalStatus,
     TicketStatus,
-    TrainingStatus,
+    RegistrationStatus,
+    Category,
 )
 
 logger = logging.getLogger(__name__)
@@ -49,7 +50,7 @@ class CandidateService:
             ticket_status=TicketStatus(ticket_status) if ticket_status else TicketStatus.NEEDED,
             arrival_date=arrival_date,
             medical_status=MedicalStatus(medical_status) if medical_status else MedicalStatus.NOT_STARTED,
-            training_status=TrainingStatus.NONE,
+            registration_status=RegistrationStatus.NONE,
             notes=notes,
             created_by=created_by,
         )
@@ -170,30 +171,59 @@ class CandidateService:
         await self.session.refresh(candidate)
         return candidate
 
-    async def update_training_status(
-        self, candidate_id: int, status: TrainingStatus
-    ) -> Candidate | None:
-        """Обновить статус обучения."""
+    async def cycle_registration_status(self, candidate_id: int) -> Candidate | None:
+        """Циклическое переключение статуса оформления."""
         candidate = await self.get_by_id(candidate_id)
         if not candidate:
             return None
-        candidate.training_status = status
+        cycle = [
+            RegistrationStatus.NONE,
+            RegistrationStatus.ARRIVED,
+            RegistrationStatus.MEDICAL,
+            RegistrationStatus.ORDERED,
+            RegistrationStatus.DEPARTED
+        ]
+        idx = cycle.index(candidate.registration_status)
+        new_status = cycle[(idx + 1) % len(cycle)]
+        candidate.registration_status = new_status
+        
+        # Если статус "Убыл" — переносим в категорию "Убывшие"
+        if new_status == RegistrationStatus.DEPARTED:
+            # Ищем категорию
+            result = await self.session.execute(
+                select(Category).where(Category.name == "Убывшие")
+            )
+            cat = result.scalar_one_or_none()
+            if not cat:
+                # Создаем, если нет
+                cat = Category(name="Убывшие", emoji="📝")
+                self.session.add(cat)
+                await self.session.flush()
+            candidate.category_id = cat.id
+
         await self.session.commit()
         await self.session.refresh(candidate)
-        logger.info("🪖 Обучение %s → %s", candidate.full_name, status.value)
         return candidate
 
-    async def cycle_training_status(self, candidate_id: int) -> Candidate | None:
-        """Циклическое переключение статуса обучения."""
+    async def toggle_gic_status(self, candidate_id: int) -> Candidate | None:
+        """Переключить статус ГИЦ."""
         candidate = await self.get_by_id(candidate_id)
         if not candidate:
             return None
-        cycle = [TrainingStatus.NONE, TrainingStatus.ASSIGNED, TrainingStatus.DEPARTED]
-        idx = cycle.index(candidate.training_status)
-        candidate.training_status = cycle[(idx + 1) % len(cycle)]
+        candidate.gic_status = not candidate.gic_status
         await self.session.commit()
         await self.session.refresh(candidate)
         return candidate
+
+    async def delete(self, candidate_id: int) -> bool:
+        """Удалить кандидата полностью."""
+        candidate = await self.get_by_id(candidate_id)
+        if not candidate:
+            return False
+        await self.session.delete(candidate)
+        await self.session.commit()
+        logger.info("🗑 Кандидат #%d удален", candidate_id)
+        return True
 
     # ── ARCHIVE ───────────────────────────────────────────
 
@@ -293,9 +323,9 @@ class CandidateService:
             if data.get("medical_status"):
                 await self.update_medical_status(candidate.id, MedicalStatus(data["medical_status"]))
                 updates.append(f"🏥 Медицина → **{data['medical_status']}**")
-            if data.get("training_status"):
-                await self.update_training_status(candidate.id, TrainingStatus(data["training_status"]))
-                updates.append(f"🪖 Обучение → **{data['training_status']}**")
+            if data.get("registration_status"):
+                await self.cycle_registration_status(candidate.id) # Simplified for now
+                updates.append(f"📝 Оформление → **{data['registration_status']}**")
             if not updates:
                 return "⚠️ Недостаточно данных для обновления.", candidate
             return f"✅ {candidate.full_name} обновлён:\n" + "\n".join(updates), candidate
