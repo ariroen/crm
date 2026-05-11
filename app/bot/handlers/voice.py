@@ -58,7 +58,7 @@ async def handle_voice(message: Message, session: AsyncSession, bot: Bot):
         # 4. Выполняем действие
         svc = CandidateService(session)
 
-        if intent in ("create_candidate", "update_candidate", "update_ticket", "update_medical", "update_training", "search", "list"):
+        if intent in ("create_candidate", "update_candidate", "update_ticket", "update_medical", "update_registration", "search", "list"):
             msg_text, candidate = await svc.process_ai_data(intent, data, message.from_user.id)
 
             if candidate:

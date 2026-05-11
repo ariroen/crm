@@ -91,7 +91,7 @@ class CandidateService:
             "transit": sum(1 for c in candidates if c.ticket_status == TicketStatus.IN_TRANSIT),
             "arrived": sum(1 for c in candidates if c.ticket_status == TicketStatus.ARRIVED),
             "fit": sum(1 for c in candidates if c.medical_status == MedicalStatus.FIT),
-            "departed": sum(1 for c in candidates if c.training_status == TrainingStatus.DEPARTED),
+            "departed": sum(1 for c in candidates if c.registration_status == RegistrationStatus.DEPARTED),
         }
 
     async def search(self, query: str) -> list[Candidate]:
@@ -330,7 +330,7 @@ class CandidateService:
                 return "⚠️ Недостаточно данных для обновления.", candidate
             return f"✅ {candidate.full_name} обновлён:\n" + "\n".join(updates), candidate
 
-        elif intent in ("update_ticket", "update_medical", "update_training"):
+        elif intent in ("update_ticket", "update_medical", "update_registration"):
             name = data.get("full_name")
             if not name:
                 return "⚠️ ИИ не смог определить, о ком идет речь.", None
@@ -359,11 +359,11 @@ class CandidateService:
                 )
                 return f"🏥 Медицина {candidate.full_name} → **{data['medical_status']}**.", candidate
 
-            elif intent == "update_training" and data.get("training_status"):
-                await self.update_training_status(
-                    candidate.id, TrainingStatus(data["training_status"])
+            elif intent == "update_registration" and data.get("registration_status"):
+                await self.update_registration_status(
+                    candidate.id, RegistrationStatus(data["registration_status"])
                 )
-                return f"🪖 Обучение {candidate.full_name} → **{data['training_status']}**.", candidate
+                return f"🪖 Обучение {candidate.full_name} → **{data['registration_status']}**.", candidate
 
             return "⚠️ Недостаточно данных для обновления.", candidate
 

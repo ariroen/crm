@@ -25,11 +25,11 @@ async def daily_report(bot, chat_id: int):
         all_c = list(result.scalars().all())
         new_today = [c for c in all_c if c.created_at >= yesterday]
 
-        from app.db.models import TicketStatus, MedicalStatus, TrainingStatus
+        from app.db.models import TicketStatus, MedicalStatus, RegistrationStatus
         bought = sum(1 for c in all_c if c.ticket_status == TicketStatus.BOUGHT)
         arrived = sum(1 for c in all_c if c.ticket_status == TicketStatus.ARRIVED)
         fit = sum(1 for c in all_c if c.medical_status == MedicalStatus.FIT)
-        departed = sum(1 for c in all_c if c.training_status == TrainingStatus.DEPARTED)
+        departed = sum(1 for c in all_c if c.registration_status == RegistrationStatus.DEPARTED)
 
         # Задачи
         result = await session.execute(

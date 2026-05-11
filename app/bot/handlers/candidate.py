@@ -13,7 +13,7 @@ from app.bot.keyboards.inline import (
 )
 from app.bot.states.candidate_fsm import CandidateFSM
 from app.services.candidate_service import CandidateService
-from app.db.models import TicketStatus, MedicalStatus, TrainingStatus
+from app.db.models import TicketStatus, MedicalStatus, RegistrationStatus
 
 router = Router(name="candidate")
 
@@ -186,7 +186,7 @@ async def cb_stats(callback: CallbackQuery, session: AsyncSession):
     t_arr = sum(1 for c in all_c if c.ticket_status == TicketStatus.ARRIVED)
     m_fit = sum(1 for c in all_c if c.medical_status == MedicalStatus.FIT)
     m_unf = sum(1 for c in all_c if c.medical_status == MedicalStatus.UNFIT)
-    tr_dep = sum(1 for c in all_c if c.training_status == TrainingStatus.DEPARTED)
+    tr_dep = sum(1 for c in all_c if c.registration_status == RegistrationStatus.DEPARTED)
     conv = round(tr_dep / total * 100) if total else 0
     text = (
         f"📊 **СТАТИСТИКА**\n━━━━━━━━━━━━━━━━━━━━━\n"

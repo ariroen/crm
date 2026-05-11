@@ -30,7 +30,7 @@ MEGA_PROMPT = """Ты — военный диспетчер-аналитик с�
 
 Формат ответа:
 {{
-  "intent": "<один из: create_candidate | update_candidate | update_ticket | update_medical | update_training | set_reminder | search | list | mass_action | unknown>",
+  "intent": "<один из: create_candidate | update_candidate | update_ticket | update_medical | update_registration | set_reminder | search | list | mass_action | unknown>",
   "data": {{
     "full_name": "ФИО или имя",
     "phone": "телефон",

@@ -6,7 +6,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from app.db.models import Candidate, TicketStatus, MedicalStatus, TrainingStatus
+from app.db.models import Candidate, TicketStatus, MedicalStatus, RegistrationStatus
 
 
 # ── Главное меню ──────────────────────────────────────────────
@@ -53,10 +53,12 @@ MEDICAL_LABELS = {
     MedicalStatus.UNFIT: "🏥 Мед: Не годен ❌",
 }
 
-TRAINING_LABELS = {
-    TrainingStatus.NONE: "🪖 Обучение: Не распределен",
-    TrainingStatus.ASSIGNED: "🪖 Обучение: Распределен 📋",
-    TrainingStatus.DEPARTED: "🪖 Обучение: Убыл ✅",
+REGISTRATION_LABELS = {
+    RegistrationStatus.NONE: "📝 Оформление: Нет",
+    RegistrationStatus.ARRIVED: "📝 Оформление: Пришёл",
+    RegistrationStatus.MEDICAL: "📝 Оформление: Медицина",
+    RegistrationStatus.ORDERED: "📝 Оформление: Приказ",
+    RegistrationStatus.DEPARTED: "📝 Оформление: Убыл 🚀",
 }
 
 

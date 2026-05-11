@@ -64,7 +64,7 @@ class PDFService:
         if candidate.arrival_date:
             draw_field("Прибытие", candidate.arrival_date.strftime("%d.%m.%Y"))
         draw_field("Медицина", candidate.medical_status.value)
-        draw_field("Обучение", candidate.training_status.value)
+        draw_field("Обучение", candidate.registration_status.value)
 
         if candidate.notes:
             y -= 5*mm

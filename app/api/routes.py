@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
 from app.db.session import get_session
-from app.db.models import Candidate, Reminder, TicketStatus, MedicalStatus, TrainingStatus
+from app.db.models import Candidate, Reminder, TicketStatus, MedicalStatus, RegistrationStatus
 
 app = FastAPI(title="Контракт-61: API", version="1.0.0")
 
@@ -34,7 +34,7 @@ async def list_candidates(session: AsyncSession = Depends(get_session)):
         {
             "id": c.id, "full_name": c.full_name, "phone": c.phone,
             "source": c.source, "ticket_status": c.ticket_status.value,
-            "medical_status": c.medical_status.value, "training_status": c.training_status.value,
+            "medical_status": c.medical_status.value, "registration_status": c.registration_status.value,
             "created_at": c.created_at.isoformat(),
         }
         for c in candidates
