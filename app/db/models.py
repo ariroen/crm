@@ -77,7 +77,7 @@ class Operator(Base):
     user_id: Mapped[int] = mapped_column(Integer, unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[OperatorRole] = mapped_column(
-        SQLEnum(OperatorRole), default=OperatorRole.OPERATOR, nullable=False
+        Enum(OperatorRole), default=OperatorRole.OPERATOR, nullable=False
     )
     active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
@@ -114,16 +114,16 @@ class Candidate(Base):
     source: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     ticket_status: Mapped[TicketStatus] = mapped_column(
-        SQLEnum(TicketStatus), default=TicketStatus.NEEDED, nullable=False
+        Enum(TicketStatus), default=TicketStatus.NEEDED, nullable=False
     )
     arrival_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     medical_status: Mapped[MedicalStatus] = mapped_column(
-        SQLEnum(MedicalStatus), default=MedicalStatus.NOT_STARTED, nullable=False
+        Enum(MedicalStatus), default=MedicalStatus.NOT_STARTED, nullable=False
     )
 
     registration_status: Mapped[RegistrationStatus] = mapped_column(
-        SQLEnum(RegistrationStatus), default=RegistrationStatus.NONE
+        Enum(RegistrationStatus), default=RegistrationStatus.NONE
     )
     gic_status: Mapped[bool] = mapped_column(default=False)  # Проверка в ГИЦ
 
