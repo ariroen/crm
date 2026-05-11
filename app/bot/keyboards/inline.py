@@ -65,20 +65,7 @@ def candidate_card_kb(candidate: Candidate) -> InlineKeyboardMarkup:
     cid = candidate.id
     builder = InlineKeyboardBuilder()
 
-    # Строка 1: Статусы (циклические переключатели)
-    builder.row(
-        InlineKeyboardButton(
-            text=TICKET_LABELS.get(candidate.ticket_status, "🎫 Билет"),
-            callback_data=f"cycle_ticket:{cid}",
-        ),
-    )
-    builder.row(
-        InlineKeyboardButton(
-            text=MEDICAL_LABELS.get(candidate.medical_status, "🏥 Мед"),
-            callback_data=f"cycle_medical:{cid}",
-        ),
-    )
-    builder.row(
+
     # Строка 3: ГИЦ и Билет
     builder.row(
         InlineKeyboardButton(text="🔎 ГИЦ: {}".format(candidate.gic_emoji), callback_data=f"toggle_gic:{cid}"),
